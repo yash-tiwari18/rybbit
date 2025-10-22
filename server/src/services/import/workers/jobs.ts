@@ -20,5 +20,7 @@ export interface CsvParseJob extends ImportJob {
 
 export interface DataInsertJob extends ImportJob {
   chunk: UmamiEvent[];
-  allChunksSent: boolean;
+  chunkNumber?: number; // Chunk sequence number for tracking
+  totalChunks?: number; // Expected total chunks for finalization validation
+  allChunksSent: boolean; // Finalization signal
 }

@@ -1,8 +1,7 @@
-import boss from "../../../db/postgres/boss.js";
+import { getJobQueue } from "../../../queues/jobQueueFactory.js";
 import { UmamiImportMapper } from "../mappings/umami.js";
 import { DataInsertJob, DATA_INSERT_QUEUE } from "./jobs.js";
 import { clickhouse } from "../../../db/clickhouse/clickhouse.js";
-import { Job } from "pg-boss";
 import { ImportStatusManager } from "../importStatusManager.js";
 
 const getImportDataMapping = (source: string) => {
@@ -12,42 +11,71 @@ const getImportDataMapping = (source: string) => {
     default:
       throw new Error(`Unsupported import source: ${source}`);
   }
-}
+};
 
 export async function registerDataInsertWorker() {
-  await boss.work(DATA_INSERT_QUEUE, { batchSize: 1, pollingIntervalSeconds: 2 }, async ([ job ]: Job<DataInsertJob>[]) => {
-    const { site, importId, source, chunk, allChunksSent } = job.data;
+  const jobQueue = getJobQueue();
 
-    if (allChunksSent) {
+  await jobQueue.work<DataInsertJob>(
+    DATA_INSERT_QUEUE,
+    { batchSize: 1, pollingIntervalSeconds: 2 },
+    async ([job]) => {
+      const { site, importId, source, chunk, chunkNumber, totalChunks, allChunksSent } = job.data;
+
+      // Handle finalization signal
+      if (allChunksSent) {
+        try {
+          await ImportStatusManager.updateStatus(importId, "completed");
+          console.log(
+            `[Import ${importId}] Completed successfully (${totalChunks ?? 0} chunks processed)`
+          );
+          return;
+        } catch (error) {
+          console.error(`[Import ${importId}] Failed to mark as completed:`, error);
+          await ImportStatusManager.updateStatus(
+            importId,
+            "failed",
+            "Failed to complete import"
+          );
+          throw error;
+        }
+      }
+
+      // Process data chunk
       try {
-        await ImportStatusManager.updateStatus(importId, "completed");
-        console.log(`Import ${importId} completed`);
-        return;
+        const dataMapper = getImportDataMapping(source);
+        const transformedRecords = dataMapper.transform(chunk, site, importId);
+
+        // Insert to ClickHouse (critical - must succeed)
+        await clickhouse.insert({
+          table: "events",
+          values: transformedRecords,
+          format: "JSONEachRow",
+        });
+
+        // Update progress (non-critical - log if fails but don't crash)
+        try {
+          await ImportStatusManager.updateProgress(importId, transformedRecords.length);
+        } catch (progressError) {
+          console.warn(
+            `[Import ${importId}] Progress update failed (data inserted successfully):`,
+            progressError instanceof Error ? progressError.message : progressError
+          );
+          // Don't throw - data is safely in ClickHouse, progress can be off slightly
+        }
+
+        console.log(
+          `[Import ${importId}] Chunk ${chunkNumber ?? "?"} processed: ${transformedRecords.length} events`
+        );
       } catch (error) {
-        console.error(`Failed to mark import ${importId} as completed:`, error);
-        await ImportStatusManager.updateStatus(importId, "failed", "Failed to complete import");
+        console.error(`[Import ${importId}] ClickHouse insert failed:`, error);
+        await ImportStatusManager.updateStatus(
+          importId,
+          "failed",
+          `Data insertion failed: ${error instanceof Error ? error.message : "Unknown error"}`
+        );
         throw error;
       }
     }
-
-    try {
-      const dataMapper = getImportDataMapping(source);
-      const transformedRecords = dataMapper.transform(chunk, site, importId);
-
-      await clickhouse.insert({
-        table: "events",
-        values: transformedRecords,
-        format: "JSONEachRow",
-      });
-
-      await ImportStatusManager.updateProgress(
-        importId,
-        transformedRecords.length
-      );
-    } catch (error) {
-      console.error("Error in data insert worker:", error);
-      await ImportStatusManager.updateStatus(importId, "failed", "Error inserting chunk");
-      throw error;
-    }
-  });
+  );
 }

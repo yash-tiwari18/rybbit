@@ -80,7 +80,7 @@ import { getTrackingConfig } from "./api/sites/getTrackingConfig.js";
 import { getSiteImports } from "./api/sites/getSiteImports.js";
 import { importSiteData } from "./api/sites/importSiteData.js";
 import { deleteSiteImport } from "./api/sites/deleteSiteImport.js";
-import boss from "./db/postgres/boss.js";
+import { getJobQueue } from "./queues/jobQueueFactory.js";
 import { registerCsvParseWorker } from "./services/import/workers/csvParseWorker.js";
 import { registerDataInsertWorker } from "./services/import/workers/dataInsertWorker.js";
 import { createJobQueues } from "./services/import/workers/queues.js";
@@ -434,7 +434,9 @@ const start = async () => {
       weeklyReportService.startWeeklyReportCron();
     }
 
-    await boss.start();
+    // Initialize and start job queue system
+    const jobQueue = getJobQueue();
+    await jobQueue.start();
     await createJobQueues();
     await registerCsvParseWorker();
     await registerDataInsertWorker();
@@ -461,7 +463,8 @@ const start = async () => {
     //     });
     // }
   } catch (err) {
-    await boss.stop();
+    const jobQueue = getJobQueue();
+    await jobQueue.stop();
     server.log.error(err);
     process.exit(1);
   }
@@ -491,6 +494,11 @@ const shutdown = async (signal: string) => {
     // Stop accepting new connections
     await server.close();
     server.log.info("Server closed");
+
+    // Shutdown job queue system
+    const jobQueue = getJobQueue();
+    await jobQueue.stop();
+    server.log.info("Job queue shut down");
 
     // Shutdown uptime service
     // await uptimeService.shutdown();
