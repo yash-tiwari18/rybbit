@@ -1,7 +1,7 @@
+import { eq } from "drizzle-orm";
 import { IS_CLOUD } from "./const.js";
 import { db } from "../db/postgres/postgres.js";
 import { organization } from "../db/postgres/schema.js";
-import { eq } from "drizzle-orm";
 import { getSubscriptionInner } from "../api/stripe/getSubscription.js";
 
 export interface TierInfo {
