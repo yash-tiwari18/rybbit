@@ -50,9 +50,10 @@ type GetSingleColPaginatedResponse = {
 
 const getQuery = (request: FastifyRequest<GetSingleColRequest>, isCountQuery: boolean = false) => {
   const { filters, parameter, limit, page } = request.query;
+  const site = request.params.site;
 
-  const filterStatement = getFilterStatement(filters);
   const timeStatement = getTimeStatement(request.query);
+  const filterStatement = getFilterStatement(filters, Number(site), timeStatement);
 
   let validatedLimit: number | null = null;
   if (!isCountQuery && limit !== undefined) {

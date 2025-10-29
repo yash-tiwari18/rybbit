@@ -44,9 +44,8 @@ export async function getFunnel(
   }
 
   try {
-    const filterStatement = getFilterStatement(request.query.filters);
-
     const timeStatement = getTimeStatement(request.query);
+    const filterStatement = getFilterStatement(request.query.filters, Number(site), timeStatement);
 
     // Build conditional statements for each step
     const stepConditions = steps.map(step => {

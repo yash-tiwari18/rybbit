@@ -57,8 +57,8 @@ export async function getUsers(req: FastifyRequest<GetUsersRequest>, res: Fastif
   const actualSortOrder = sortOrder === "asc" ? "ASC" : "DESC";
 
   // Generate filter statement and time statement
-  const filterStatement = getFilterStatement(filters);
   const timeStatement = getTimeStatement(req.query);
+  const filterStatement = getFilterStatement(filters, Number(site), timeStatement);
 
   const query = `
 WITH AggregatedUsers AS (

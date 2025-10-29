@@ -65,9 +65,10 @@ function getTimeStatementFill(params: FilterParams, bucket: TimeBucket) {
   return "";
 }
 
-const getQuery = (params: FilterParams<{ bucket: TimeBucket }>) => {
+const getQuery = (params: FilterParams<{ bucket: TimeBucket }>, siteId: number) => {
   const { startDate, endDate, timeZone, bucket, filters, pastMinutesStart, pastMinutesEnd } = params;
-  const filterStatement = getFilterStatement(filters);
+  const timeStatement = getTimeStatement(params);
+  const filterStatement = getFilterStatement(filters, siteId, timeStatement);
 
   const pastMinutesRange =
     pastMinutesStart !== undefined && pastMinutesEnd !== undefined
@@ -166,15 +167,18 @@ export async function getOverviewBucketed(
   const { startDate, endDate, timeZone, bucket, filters, pastMinutesStart, pastMinutesEnd } = req.query;
   const site = req.params.site;
 
-  const query = getQuery({
-    startDate,
-    endDate,
-    timeZone,
-    bucket,
-    filters,
-    pastMinutesStart,
-    pastMinutesEnd,
-  });
+  const query = getQuery(
+    {
+      startDate,
+      endDate,
+      timeZone,
+      bucket,
+      filters,
+      pastMinutesStart,
+      pastMinutesEnd,
+    },
+    Number(site)
+  );
 
   try {
     const result = await clickhouse.query({

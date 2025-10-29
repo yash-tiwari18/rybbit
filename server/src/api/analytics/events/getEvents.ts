@@ -43,7 +43,7 @@ export async function getEvents(req: FastifyRequest<GetEventsRequest>, res: Fast
   const timeStatement =
     startDate || endDate ? getTimeStatement(req.query) : "AND timestamp > now() - INTERVAL 30 MINUTE"; // Default to last 30 minutes if no time range specified
 
-  const filterStatement = filters ? getFilterStatement(filters) : "";
+  const filterStatement = filters ? getFilterStatement(filters, Number(site), timeStatement) : "";
 
   try {
     // First, get the total count for pagination metadata

@@ -56,8 +56,8 @@ export async function getErrorBucketed(req: FastifyRequest<GetErrorBucketedReque
   }
 
   const numericSiteId = Number(site);
-  const filterStatement = getFilterStatement(req.query.filters);
   const timeStatement = getTimeStatement(req.query);
+  const filterStatement = getFilterStatement(req.query.filters, numericSiteId, timeStatement);
   const timeStatementFill = getTimeStatementFill(req.query, bucket);
 
   try {

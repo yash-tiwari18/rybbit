@@ -52,8 +52,8 @@ export async function getUserSessions(req: FastifyRequest<GetUserSessionsRequest
   const { startDate, endDate, timeZone, site, filters } = req.query;
   const userId = req.params.userId;
 
-  const filterStatement = getFilterStatement(filters);
   const timeStatement = getTimeStatement(req.query);
+  const filterStatement = getFilterStatement(filters, Number(site), timeStatement);
 
   const query = `
 SELECT

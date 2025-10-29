@@ -122,8 +122,8 @@ export async function getGoals(
     }
 
     // Build filter and time clauses for ClickHouse queries
-    const filterStatement = filters ? getFilterStatement(filters) : "";
     const timeStatement = getTimeStatement(request.query);
+    const filterStatement = filters ? getFilterStatement(filters, Number(site), timeStatement) : "";
 
     // First, get the total number of unique sessions (denominator for conversion rate)
     const totalSessionsQuery = `

@@ -14,8 +14,8 @@ export async function getSessionLocations(
 ) {
   const { site } = req.params;
 
-  const filterStatement = getFilterStatement(req.query.filters);
   const timeStatement = getTimeStatement(req.query);
+  const filterStatement = getFilterStatement(req.query.filters, Number(site), timeStatement);
 
   const result = await clickhouse.query({
     query: `

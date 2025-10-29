@@ -21,7 +21,7 @@ export async function getOutboundLinks(req: FastifyRequest<GetOutboundLinksReque
   const site = req.params.site;
 
   const timeStatement = getTimeStatement(req.query);
-  const filterStatement = filters ? getFilterStatement(filters) : "";
+  const filterStatement = filters ? getFilterStatement(filters, Number(site), timeStatement) : "";
 
   const query = `
     SELECT

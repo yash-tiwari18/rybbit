@@ -75,8 +75,8 @@ const getQuery = (request: FastifyRequest<GetPerformanceByDimensionRequest>, isC
     throw new Error(`Invalid dimension: ${dimension}`);
   }
 
-  const filterStatement = getFilterStatement(filters);
   const timeStatement = getTimeStatement(request.query);
+  const filterStatement = getFilterStatement(filters, Number(request.params.site), timeStatement);
 
   let validatedLimit: number | null = null;
   if (!isCountQuery && limit !== undefined) {

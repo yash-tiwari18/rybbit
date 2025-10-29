@@ -49,8 +49,8 @@ const getErrorEventsQuery = (request: FastifyRequest<GetErrorEventsRequest>, isC
   const { startDate, endDate, timeZone, filters, errorMessage, limit, page, pastMinutesStart, pastMinutesEnd } =
     request.query;
 
-  const filterStatement = getFilterStatement(filters);
   const timeStatement = getTimeStatement(request.query);
+  const filterStatement = getFilterStatement(filters, Number(request.params.site), timeStatement);
 
   let validatedLimit: number | null = null;
   if (!isCountQuery && limit !== undefined) {

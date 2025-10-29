@@ -31,8 +31,8 @@ type ErrorNamesPaginatedResponse = {
 const getErrorNamesQuery = (request: FastifyRequest<GetErrorNamesRequest>, isCountQuery: boolean = false) => {
   const { filters, limit, page } = request.query;
 
-  const filterStatement = getFilterStatement(filters);
   const timeStatement = getTimeStatement(request.query);
+  const filterStatement = getFilterStatement(filters, Number(request.params.site), timeStatement);
 
   let validatedLimit: number | null = null;
   if (!isCountQuery && limit !== undefined) {

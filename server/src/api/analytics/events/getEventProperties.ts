@@ -28,7 +28,7 @@ export async function getEventProperties(req: FastifyRequest<GetEventPropertiesR
 
   const timeStatement = getTimeStatement(req.query);
 
-  const filterStatement = filters ? getFilterStatement(filters) : "";
+  const filterStatement = filters ? getFilterStatement(filters, Number(site), timeStatement) : "";
 
   const query = `
     SELECT

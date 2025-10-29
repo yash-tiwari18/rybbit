@@ -56,7 +56,8 @@ export async function getSessions(req: FastifyRequest<GetSessionsRequest>, res: 
   const { filters, page, userId, limit } = req.query;
   const site = req.params.site;
 
-  let filterStatement = getFilterStatement(filters);
+  const timeStatement = getTimeStatement(req.query);
+  let filterStatement = getFilterStatement(filters, Number(site), timeStatement);
 
   // Transform filter statement to use extracted UTM columns instead of map access
   // since the CTE already extracts utm_source, utm_medium, etc. as separate columns
@@ -66,8 +67,6 @@ export async function getSessions(req: FastifyRequest<GetSessionsRequest>, res: 
     .replace(/url_parameters\['utm_campaign'\]/g, "utm_campaign")
     .replace(/url_parameters\['utm_term'\]/g, "utm_term")
     .replace(/url_parameters\['utm_content'\]/g, "utm_content");
-
-  const timeStatement = getTimeStatement(req.query);
 
   const query = `
   WITH AggregatedSessions AS (

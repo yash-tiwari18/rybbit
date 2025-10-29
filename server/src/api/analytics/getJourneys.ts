@@ -36,7 +36,7 @@ export const getJourneys = async (
 
     // Time conditions using getTimeStatement
     const timeStatement = getTimeStatement(request.query);
-    const filterStatement = getFilterStatement(filters);
+    const filterStatement = getFilterStatement(filters, Number(site), timeStatement);
 
     // Parse step filters
     let parsedStepFilters: Record<number, string> = {};

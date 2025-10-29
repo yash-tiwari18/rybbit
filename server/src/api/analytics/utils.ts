@@ -138,7 +138,7 @@ export const getSqlParam = (parameter: FilterParameter) => {
   return filterParamSchema.parse(parameter);
 };
 
-export function getFilterStatement(filters: string) {
+export function getFilterStatement(filters: string, siteId?: number, timeStatement?: string) {
   if (!filters) {
     return "";
   }
@@ -150,6 +150,10 @@ export function getFilterStatement(filters: string) {
     return "";
   }
 
+  const siteIdFilter = siteId ? `site_id = ${siteId}` : "";
+  // Strip leading "AND " from timeStatement since we'll be constructing WHERE clauses
+  const timeFilter = timeStatement ? timeStatement.replace(/^AND\s+/i, "").trim() : "";
+
   return (
     "AND " +
     filtersArray
@@ -160,26 +164,26 @@ export function getFilterStatement(filters: string) {
         // Handle event_name as a session-level filter
         // This ensures we filter to sessions containing the event, but still count all pageviews in those sessions
         if (filter.parameter === "event_name") {
-          if (filter.value.length === 1) {
-            return `session_id IN (
-              SELECT DISTINCT session_id
-              FROM events
-              WHERE event_name ${filterTypeToOperator(filter.type)} ${SqlString.escape(x + filter.value[0] + x)}
-            )`;
-          }
+          const whereClause = [siteIdFilter, timeFilter].filter(Boolean).join(" AND ");
+          const eventNameCondition = filter.value.length === 1
+            ? `event_name ${filterTypeToOperator(filter.type)} ${SqlString.escape(x + filter.value[0] + x)}`
+            : `(${filter.value.map(value => `event_name ${filterTypeToOperator(filter.type)} ${SqlString.escape(x + value + x)}`).join(" OR ")})`;
 
-          const valuesWithOperator = filter.value.map(
-            value => `event_name ${filterTypeToOperator(filter.type)} ${SqlString.escape(x + value + x)}`
-          );
+          const finalWhere = whereClause
+            ? `WHERE ${whereClause} AND ${eventNameCondition}`
+            : `WHERE ${eventNameCondition}`;
 
           return `session_id IN (
             SELECT DISTINCT session_id
             FROM events
-            WHERE (${valuesWithOperator.join(" OR ")})
+            ${finalWhere}
           )`;
         }
 
         if (filter.parameter === "entry_page") {
+          const whereClause = [siteIdFilter, timeFilter].filter(Boolean).join(" AND ");
+          const whereStatement = whereClause ? `WHERE ${whereClause}` : "";
+
           if (filter.value.length === 1) {
             return `session_id IN (
               SELECT session_id
@@ -188,6 +192,7 @@ export function getFilterStatement(filters: string) {
                   session_id,
                   argMin(pathname, timestamp) AS entry_pathname
                 FROM events
+                ${whereStatement}
                 GROUP BY session_id
               )
               WHERE entry_pathname ${filterTypeToOperator(filter.type)} ${SqlString.escape(x + filter.value[0] + x)}
@@ -205,6 +210,7 @@ export function getFilterStatement(filters: string) {
                 session_id,
                 argMin(pathname, timestamp) AS entry_pathname
               FROM events
+              ${whereStatement}
               GROUP BY session_id
             )
             WHERE (${valuesWithOperator.join(" OR ")})
@@ -212,6 +218,9 @@ export function getFilterStatement(filters: string) {
         }
 
         if (filter.parameter === "exit_page") {
+          const whereClause = [siteIdFilter, timeFilter].filter(Boolean).join(" AND ");
+          const whereStatement = whereClause ? `WHERE ${whereClause}` : "";
+
           if (filter.value.length === 1) {
             return `session_id IN (
               SELECT session_id
@@ -220,6 +229,7 @@ export function getFilterStatement(filters: string) {
                   session_id,
                   argMax(pathname, timestamp) AS exit_pathname
                 FROM events
+                ${whereStatement}
                 GROUP BY session_id
               )
               WHERE exit_pathname ${filterTypeToOperator(filter.type)} ${SqlString.escape(x + filter.value[0] + x)}
@@ -237,6 +247,7 @@ export function getFilterStatement(filters: string) {
                 session_id,
                 argMax(pathname, timestamp) AS exit_pathname
               FROM events
+              ${whereStatement}
               GROUP BY session_id
             )
             WHERE (${valuesWithOperator.join(" OR ")})

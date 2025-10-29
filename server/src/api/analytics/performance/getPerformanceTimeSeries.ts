@@ -65,9 +65,10 @@ function getTimeStatementFill(params: FilterParams, bucket: TimeBucket) {
   return "";
 }
 
-const getQuery = (params: FilterParams<{ bucket: TimeBucket }>) => {
+const getQuery = (params: FilterParams<{ bucket: TimeBucket }>, siteId: number) => {
   const { startDate, endDate, timeZone, bucket, filters, pastMinutesStart, pastMinutesEnd } = params;
-  const filterStatement = getFilterStatement(filters);
+  const timeStatement = getTimeStatement(params);
+  const filterStatement = getFilterStatement(filters, siteId, timeStatement);
 
   const isAllTime = !startDate && !endDate && !pastMinutesStart && !pastMinutesEnd;
 
@@ -100,7 +101,7 @@ WHERE
     site_id = {siteId:Int32}
     AND type = 'performance'
     ${filterStatement}
-    ${getTimeStatement(params)}
+    ${timeStatement}
 GROUP BY time ORDER BY time ${isAllTime ? "" : getTimeStatementFill(params, bucket)}`;
 
   return query;
@@ -119,7 +120,7 @@ export async function getPerformanceTimeSeries(
 ) {
   const site = req.params.site;
 
-  const query = getQuery(req.query);
+  const query = getQuery(req.query, Number(site));
 
   try {
     const result = await clickhouse.query({
