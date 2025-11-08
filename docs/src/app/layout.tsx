@@ -153,19 +153,6 @@ export default function Layout({ children }: { children: ReactNode }) {
         })(document, window.mixpanel || []);
       `}
       </Script>
-      <Script
-        src="https://www.googletagmanager.com/gtag/js?id=G-JX2XCP00J1"
-        strategy="afterInteractive"
-        id="ga-script"
-        onLoad={() => {
-          (window as any).dataLayer = (window as any).dataLayer || [];
-          function gtag(...args: any[]) {
-            (window as any).dataLayer.push(args);
-          }
-          gtag('js', new Date());
-          gtag('config', 'G-JX2XCP00J1');
-        }}
-      />
       <body className={`flex flex-col min-h-screen ${inter.variable} font-sans`}>
         <RootProvider
           theme={{
