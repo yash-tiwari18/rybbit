@@ -24,6 +24,9 @@ import { resetStore, useStore } from "../../lib/store";
 import { useRouter } from "next/navigation";
 import { isValidDomain, normalizeDomain } from "../../lib/utils";
 
+export const FREE_SITE_LIMIT = 1;
+export const STANDARD_SITE_LIMIT = 5;
+
 export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disabled?: boolean }) {
   const { setSite } = useStore();
   const router = useRouter();
@@ -37,10 +40,10 @@ export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disa
     if (!IS_CLOUD) {
       return false;
     }
-    if (subscription?.status !== "active" && numberOfSites >= 3) {
+    if (subscription?.status !== "active" && numberOfSites >= FREE_SITE_LIMIT) {
       return true;
     }
-    if (!subscription?.isPro && numberOfSites >= 10) {
+    if (!subscription?.isPro && numberOfSites >= STANDARD_SITE_LIMIT) {
       return true;
     }
 
@@ -108,7 +111,8 @@ export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disa
           </span>
         </TooltipTrigger>
         <TooltipContent>
-          You have reached the limit of {subscription?.isPro ? 10 : 3} websites. Upgrade to add more websites
+          You have reached the limit of {subscription?.isPro ? STANDARD_SITE_LIMIT : FREE_SITE_LIMIT} websites. Upgrade
+          to add more websites
         </TooltipContent>
       </Tooltip>
     );

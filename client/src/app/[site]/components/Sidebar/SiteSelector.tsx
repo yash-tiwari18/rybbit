@@ -142,7 +142,7 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
           trigger={
             <Button variant="ghost" className="w-full justify-start gap-2">
               <Plus className="h-4 w-4" />
-              Add New Site
+              Add Website
             </Button>
           }
         />

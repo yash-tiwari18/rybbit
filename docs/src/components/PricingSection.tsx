@@ -6,14 +6,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { trackAdEvent } from "@/lib/trackAdEvent";
-import { DEFAULT_EVENT_LIMIT } from "../lib/const";
+import { DEFAULT_EVENT_LIMIT, FREE_SITE_LIMIT, STANDARD_SITE_LIMIT } from "../lib/const";
 
 // Available event tiers for the slider
 const EVENT_TIERS = [100_000, 250_000, 500_000, 1_000_000, 2_000_000, 5_000_000, 10_000_000, 20_000_000, "Custom"];
 
 // Define standard plan features
 const STANDARD_FEATURES = [
-  "Up to 10 websites",
+  `Up to ${STANDARD_SITE_LIMIT} websites`,
   "Up to 3 team members",
   "Web vitals",
   "Funnels",
@@ -39,7 +39,7 @@ const PRO_FEATURES = [
 // Define free plan features
 const FREE_FEATURES = [
   { feature: "1 user", included: true },
-  { feature: "Up to 3 websites", included: true },
+  { feature: `${FREE_SITE_LIMIT} website`, included: true },
   { feature: "Cookieless tracking", included: true },
   { feature: "Web analytics dashboard", included: true },
   { feature: "Custom events", included: true },
