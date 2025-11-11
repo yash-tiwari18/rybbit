@@ -12,6 +12,10 @@ export class CSVWorkerManager {
   private earliestAllowedDate: DateTime | null = null;
   private latestAllowedDate: DateTime | null = null;
 
+  private uploadQueue: Array<UmamiEvent[]> = [];
+  private isProcessing = false;
+  private parsingComplete = false;
+
   startImport(
     file: File,
     siteId: number,
@@ -38,14 +42,13 @@ export class CSVWorkerManager {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: "greedy",
+      worker: true,
       chunkSize: 9 * 1024 * 1024,
-      chunk: async (results, parser) => {
+      chunk: (results, parser) => {
         if (this.aborted || this.quotaExceeded) {
           parser.abort();
           return;
         }
-
-        parser.pause();
 
         const validEvents: UmamiEvent[] = [];
         for (const row of results.data) {
@@ -55,26 +58,41 @@ export class CSVWorkerManager {
           }
         }
 
-        // Upload chunk and wait for completion
-        await this.uploadChunk(validEvents, false);
-
-        // Only resume if not aborted
-        if (!this.aborted && !this.quotaExceeded) {
-          parser.resume();
-        }
+        this.uploadQueue.push(validEvents);
+        this.processQueue();
       },
-      complete: async () => {
+      complete: () => {
         if (this.aborted) return;
 
-        // Send finalization signal
-        await this.uploadChunk([], true);
-        console.log("Import completed successfully");
+        this.parsingComplete = true;
+        this.processQueue();
       },
       error: error => {
         if (this.aborted) return;
         this.handleError(error.message);
       },
     });
+  }
+
+  private async processQueue(): Promise<void> {
+    if (this.isProcessing) return;
+    this.isProcessing = true;
+
+    while (this.uploadQueue.length > 0) {
+      if (this.aborted || this.quotaExceeded) {
+        this.uploadQueue = [];
+        break;
+      }
+
+      const events = this.uploadQueue.shift()!;
+      await this.uploadChunk(events, false);
+    }
+
+    this.isProcessing = false;
+
+    if (this.parsingComplete && this.uploadQueue.length === 0 && !this.aborted) {
+      await this.uploadChunk([], true);
+    }
   }
 
   private isDateInRange(dateStr: string): boolean {
@@ -128,7 +146,6 @@ export class CSVWorkerManager {
   }
 
   private handleError(message: string): void {
-    console.error("CSV Import Error:", message);
     this.terminate();
   }
 
@@ -157,12 +174,10 @@ export class CSVWorkerManager {
       if (data.quotaExceeded) {
         this.quotaExceeded = true;
         this.aborted = true;
-        console.log("Import completed with quota limits:", data.message);
         return;
       }
     } catch (error) {
       // Critical failure - network error, server error, etc.
-      console.error("Upload failed:", error instanceof Error ? error.message : "Unknown error");
       this.terminate();
       return;
     }

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getUserHasAdminAccessToSite } from "../../lib/auth-utils.js";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { updateImportProgress, updateImportStatus, getImportById } from "../../services/import/importStatusManager.js";
-import { UmamiImportMapper, type UmamiEvent } from "../../services/import/mappings/umami.js";
+import { UmamiImportMapper } from "../../services/import/mappings/umami.js";
 import { ImportQuotaTracker } from "../../services/import/importQuotaChecker.js";
 import { db } from "../../db/postgres/postgres.js";
 import { sites, importStatus } from "../../db/postgres/schema.js";
