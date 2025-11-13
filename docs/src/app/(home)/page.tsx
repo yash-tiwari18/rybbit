@@ -139,7 +139,8 @@ export default function HomePage() {
         </h1>
         <h2 className="text-base md:text-xl pt-4 md:pt-6 px-4 tracking-tight max-w-4xl text-center text-neutral-300 font-light">
           Rybbit is powerful, lightweight, and super easy to use analytics. Cookieless and GDPR compliant. Hosted on EU
-          infrastructure in Germany 🇪🇺
+          infrastructure in Germany{" "}
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 767 512" role="img" aria-label="European flag" className="inline mr-2 w-8 rounded align-sub"><title>European flag</title><path className="fill-[#233E90]/80" d="M766 1H1v510h765V1Z"></path><path className="fill-yellow-400" d="m387 117-35 25 13-41-35-26h43l14-41 14 41h43l-35 26 13 41-35-25Zm114 43-35 25 13-41-35-26h43l14-41 14 41h43l-35 26 13 41-35-25Zm47 125-35 25 13-41-35-26h43l14-41 14 41h43l-35 26 13 41-35-25Zm-321 0-35 25 13-41-35-26h43l14-41 14 41h43l-35 26 13 41-35-25Zm283 125-35 25 13-41-35-26h43l14-41 14 41h43l-35 26 13 41-35-25Zm-123 35-35 25 13-41-35-26h43l14-41 14 41h43l-35 26 13 41-35-25Zm-123-35-35 25 13-41-35-26h43l14-41 14 41h43l-35 26 13 41-35-25Zm0-250-35 25 13-41-35-26h43l14-41 14 41h43l-35 26 13 41-35-25Z"></path></svg>
         </h2>
 
         <div className="flex flex-col items-center my-8 md:my-10">
