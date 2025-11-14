@@ -173,7 +173,7 @@ export function FunnelRow({ funnel, index }: FunnelRowProps) {
 
       {/* Expandable content */}
       {expanded && (
-        <div className="border-t border-neutral-200 dark:border-neutral-800">
+        <div className="border-t border-neutral-100 dark:border-neutral-800">
           <div className="p-4">
             {isPending ? (
               <ThreeDotLoader className="h-[400px]" />

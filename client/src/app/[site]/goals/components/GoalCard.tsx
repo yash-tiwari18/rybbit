@@ -191,7 +191,7 @@ export default function GoalCard({ goal, siteId }: GoalCardProps) {
           </div>
         </div>
         <div className="relative">
-          <div className="bg-neutral-300 dark:bg-neutral-700 h-1.5 w-full absolute bottom-0 left-0"></div>
+          <div className="bg-neutral-100 dark:bg-neutral-700 h-1.5 w-full absolute bottom-0 left-0"></div>
           <div
             style={{
               width: goal.conversion_rate * 100 + "%",
