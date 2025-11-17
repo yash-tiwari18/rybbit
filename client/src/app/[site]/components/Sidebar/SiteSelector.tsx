@@ -1,5 +1,5 @@
 import { ChevronDown, Plus } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, Suspense } from "react";
 import { useGetSite, useGetSitesFromOrg } from "../../../../api/admin/sites";
 import { Favicon } from "../../../../components/Favicon";
@@ -22,7 +22,6 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
 
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const currentSiteId = Number(pathname.split("/")[1]);
 
   const { user } = userStore();
@@ -57,8 +56,8 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
                   const pathSegments = pathname.split("/");
                   pathSegments[1] = site.siteId.toString();
                   const newPath = pathSegments.join("/");
-                  const queryString = searchParams.toString();
-                  router.push(queryString ? `${newPath}?${queryString}` : newPath);
+                  const queryString = window.location.search;
+                  router.push(queryString ? `${newPath}${queryString}` : newPath);
                   onSiteSelect(); // Close popover immediately
                 }}
                 className={cn(
@@ -101,8 +100,8 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
                     const pathSegments = pathname.split("/");
                     pathSegments[1] = site.siteId.toString();
                     const newPath = pathSegments.join("/");
-                    const queryString = searchParams.toString();
-                    router.push(queryString ? `${newPath}?${queryString}` : newPath);
+                    const queryString = window.location.search;
+                    router.push(queryString ? `${newPath}${queryString}` : newPath);
                     onSiteSelect(); // Close popover immediately
                   }}
                   className={cn(

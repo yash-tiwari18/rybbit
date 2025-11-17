@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
 import { ThreeDotLoader } from "../../components/Loaders";
 import { RybbitLogo } from "../../components/RybbitLogo";
@@ -12,11 +12,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/ta
 import { authClient } from "../../lib/auth";
 import { Login } from "./components/login";
 import { Signup } from "./components/signup";
+import { useQueryStates, parseAsString } from "nuqs";
 
 function AuthComponent() {
-  const searchParams = useSearchParams();
-  const organization = searchParams.get("organization");
-  const inviterEmail = searchParams.get("inviterEmail");
+  const [{ organization, inviterEmail }] = useQueryStates({
+    organization: parseAsString,
+    inviterEmail: parseAsString,
+  });
   const [activeTab, setActiveTab] = useState<"login" | "signup">("signup");
 
   // Construct callback URL to return to this page after OAuth
@@ -50,9 +52,11 @@ function AuthComponent() {
 }
 
 function AcceptInvitationInner() {
-  const invitationId = useSearchParams().get("invitationId");
-  const organization = useSearchParams().get("organization");
-  const inviterEmail = useSearchParams().get("inviterEmail");
+  const [{ invitationId, organization, inviterEmail }] = useQueryStates({
+    invitationId: parseAsString,
+    organization: parseAsString,
+    inviterEmail: parseAsString,
+  });
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");

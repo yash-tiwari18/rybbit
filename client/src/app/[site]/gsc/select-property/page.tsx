@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams, useParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,9 +8,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { authedFetch } from "@/api/utils";
+import { useQueryState, parseAsJson } from "nuqs";
 
 export default function SelectGSCPropertyPage() {
-  const searchParams = useSearchParams();
   const params = useParams();
   const router = useRouter();
   const site = params.site as string;
@@ -19,8 +19,10 @@ export default function SelectGSCPropertyPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Parse properties from query params
-  const propertiesParam = searchParams.get("properties");
-  const properties: string[] = propertiesParam ? JSON.parse(decodeURIComponent(propertiesParam)) : [];
+  const [properties] = useQueryState(
+    "properties",
+    parseAsJson<string[]>((value) => value as string[]).withDefault([])
+  );
 
   const handleSubmit = async () => {
     if (!selectedProperty) {
