@@ -4,8 +4,14 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../../../../components/ui/button";
 import { DEMO_HOSTNAME } from "../../../../lib/const";
+import { authClient } from "../../../../lib/auth";
 
 export function DemoSignupBanner() {
+  const session = authClient.useSession();
+  if (session.data) {
+    return null;
+  }
+
   // Only show on demo.rybbit.com and not in an iframe
   if (typeof window === "undefined" || window.location.host !== DEMO_HOSTNAME) {
     return null;
