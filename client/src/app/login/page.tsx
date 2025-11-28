@@ -88,8 +88,10 @@ export default function Page() {
           <div className="flex flex-col gap-4">
             <SocialButtons onError={setError} showDivider={false} />
 
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="text-muted-foreground">Or continue with email</span>
+            <div className="relative flex items-center text-xs uppercase">
+              <div className="flex-1 border-t border-neutral-200 dark:border-neutral-800" />
+              <span className="px-3 text-muted-foreground">Or continue with email</span>
+              <div className="flex-1 border-t border-neutral-200 dark:border-neutral-800" />
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -143,7 +145,10 @@ export default function Page() {
             {(!configs?.disableSignup || !isLoadingConfigs) && (
               <div className="text-center text-sm">
                 Don't have an account?{" "}
-                <Link href="/signup" className="underline underline-offset-4 hover:text-emerald-400 transition-colors duration-300">
+                <Link
+                  href="/signup"
+                  className="underline underline-offset-4 hover:text-emerald-400 transition-colors duration-300"
+                >
                   Sign up
                 </Link>
               </div>

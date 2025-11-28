@@ -196,17 +196,14 @@ export default function SignupPage() {
             <h2 className="text-2xl font-semibold mb-4">Signup</h2>
             <div className="space-y-4">
               {IS_CLOUD && (
-                <SocialButtons
-                  onError={setError}
-                  callbackURL="/signup?step=2"
-                  mode="signup"
-                  showDivider={false}
-                />
+                <SocialButtons onError={setError} callbackURL="/signup?step=2" mode="signup" showDivider={false} />
               )}
 
               {IS_CLOUD && (
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="text-muted-foreground">Or continue with email</span>
+                <div className="relative flex items-center text-xs uppercase">
+                  <div className="flex-1 border-t border-neutral-200 dark:border-neutral-800" />
+                  <span className="px-3 text-muted-foreground">Or continue with email</span>
+                  <div className="flex-1 border-t border-neutral-200 dark:border-neutral-800" />
                 </div>
               )}
 
