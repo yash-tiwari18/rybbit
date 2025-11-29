@@ -26,7 +26,7 @@ interface UmamiEvent {
 }
 
 export class CsvParser {
-  private aborted = false;
+  private cancelled = false;
   private siteId: number = 0;
   private importId: string = "";
   private platform: "umami" = "umami";
@@ -34,17 +34,13 @@ export class CsvParser {
   private earliestAllowedDate: DateTime | null = null;
   private latestAllowedDate: DateTime | null = null;
 
-  private uploadQueue: Array<UmamiEvent[]> = [];
-  private isProcessing = false;
-  private parsingComplete = false;
-
   startImport(
     file: File,
     siteId: number,
     importId: string,
     platform: "umami",
     earliestAllowedDate: string,
-    latestAllowedDate: string,
+    latestAllowedDate: string
   ): void {
     this.siteId = siteId;
     this.importId = importId;
@@ -54,12 +50,12 @@ export class CsvParser {
     this.latestAllowedDate = DateTime.fromFormat(latestAllowedDate, "yyyy-MM-dd", { zone: "utc" }).endOf("day");
 
     if (!this.earliestAllowedDate.isValid) {
-      this.aborted = true;
+      this.cancelled = true;
       return;
     }
 
     if (!this.latestAllowedDate.isValid) {
-      this.aborted = true;
+      this.cancelled = true;
       return;
     }
 
@@ -68,55 +64,45 @@ export class CsvParser {
       skipEmptyLines: "greedy",
       worker: true,
       chunkSize: 9 * 1024 * 1024,
-      chunk: (results, parser) => {
-        if (this.aborted) {
+      chunk: async (results, parser) => {
+        if (this.cancelled) {
           parser.abort();
           return;
         }
 
-        const validEvents: UmamiEvent[] = [];
-        for (const row of results.data) {
-          const event = this.transformRow(row);
-          if (event && event.created_at && this.isDateInRange(event.created_at)) {
-            validEvents.push(event);
+        try {
+          const validEvents: UmamiEvent[] = [];
+          for (const row of results.data) {
+            const event = this.transformRow(row);
+            if (event && this.isDateInRange(event.created_at)) {
+              validEvents.push(event);
+            }
           }
+
+          if (validEvents.length > 0) {
+            await this.uploadChunk(validEvents, false);
+          }
+        } catch (error) {
+          console.error("Error uploading chunk:", error);
+          this.cancel();
+          parser.abort();
         }
-
-        this.uploadQueue.push(validEvents);
-        this.processQueue();
       },
-      complete: () => {
-        if (this.aborted) return;
+      complete: async () => {
+        if (this.cancelled) return;
 
-        this.parsingComplete = true;
-        this.processQueue();
+        try {
+          // Send final batch to mark import as complete
+          await this.uploadChunk([], true);
+        } catch (error) {
+          console.error("Error completing import:", error);
+        }
       },
       error: () => {
-        if (this.aborted) return;
-        this.aborted = true;
+        if (this.cancelled) return;
+        this.cancelled = true;
       },
     });
-  }
-
-  private async processQueue(): Promise<void> {
-    if (this.isProcessing) return;
-    this.isProcessing = true;
-
-    while (this.uploadQueue.length > 0) {
-      if (this.aborted) {
-        this.uploadQueue = [];
-        break;
-      }
-
-      const events = this.uploadQueue.shift()!;
-      await this.uploadChunk(events, false);
-    }
-
-    this.isProcessing = false;
-
-    if (this.parsingComplete && this.uploadQueue.length === 0 && !this.aborted) {
-      await this.uploadChunk([], true);
-    }
   }
 
   private isDateInRange(dateStr: string): boolean {
@@ -175,22 +161,16 @@ export class CsvParser {
       return;
     }
 
-    try {
-      await authedFetch(`/batch-import-events/${this.siteId}/${this.importId}`, undefined, {
-        method: "POST",
-        data: {
-          events,
-          isLastBatch,
-        },
-      });
-    } catch (error) {
-      console.error("Error uploading chunk:", error);
-      this.aborted = true;
-      return;
-    }
+    await authedFetch(`/batch-import-events/${this.siteId}/${this.importId}`, undefined, {
+      method: "POST",
+      data: {
+        events,
+        isLastBatch,
+      },
+    });
   }
 
-  terminate() {
-    this.aborted = true;
+  cancel() {
+    this.cancelled = true;
   }
 }

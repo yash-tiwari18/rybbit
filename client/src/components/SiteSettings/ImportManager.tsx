@@ -74,7 +74,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
 
   useEffect(() => {
     return () => {
-      workerManagerRef.current?.terminate();
+      workerManagerRef.current?.cancel();
     };
   }, []);
 
