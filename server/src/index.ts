@@ -280,6 +280,11 @@ server.addHook("onRequest", async (request, reply) => {
           request.raw.url = newUrl;
           processedUrl = newUrl;
           resolvedSiteId = String(numericSiteId);
+          // Also update the parsed params since Fastify has already parsed them
+          const params = request.params as Record<string, string>;
+          if (params && "site" in params) {
+            params.site = resolvedSiteId;
+          }
         } else {
           // String ID not found in database
           return reply.status(404).send({ error: "Site not found" });
