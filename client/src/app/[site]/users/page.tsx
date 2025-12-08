@@ -113,10 +113,11 @@ export default function UsersPage() {
         // For links: use identified_user_id for identified users, device ID for anonymous
         const linkId = isIdentified ? identifiedUserId : info.getValue();
         const displayName = getUserDisplayName(info.row.original);
+        const lastSeen = DateTime.fromSQL(info.row.original.last_seen, { zone: "utc" });
 
         return (
           <Link href={`/${site}/user/${linkId}`} className="flex items-center gap-2">
-            <Avatar size={20} id={linkId as string} />
+            <Avatar size={20} id={linkId as string} lastActiveTime={lastSeen} />
             <span className="max-w-32 truncate hover:underline" title={displayName}>
               {displayName}
             </span>

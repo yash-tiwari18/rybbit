@@ -24,7 +24,7 @@ import {
   TextSelect,
   Type,
 } from "lucide-react";
-import { Duration } from "luxon";
+import { DateTime, Duration } from "luxon";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
@@ -264,7 +264,13 @@ export function ReplayBreadcrumbs() {
     <div className="flex flex-col gap-2">
       <div className="rounded-lg border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex items-center justify-between gap-2 p-2 text-xs text-neutral-900 dark:text-neutral-200">
         <div className="flex items-center gap-2">
-          <Avatar id={data.metadata.user_id} size={20} />
+          <Avatar
+            id={data.metadata.user_id}
+            size={24}
+            lastActiveTime={
+              data.metadata.end_time ? DateTime.fromSQL(data.metadata.end_time, { zone: "utc" }).toLocal() : undefined
+            }
+          />
           <span className="truncate max-w-[120px]">{getUserDisplayName(data.metadata)}</span>
           {isIdentified && <IdentifiedBadge traits={data.metadata.traits} />}
         </div>

@@ -43,8 +43,8 @@ export interface SessionReplayMetadata {
   user_id: string;
   identified_user_id: string;
   traits: Record<string, unknown> | null;
-  start_time: Date;
-  end_time?: Date;
+  start_time: string;
+  end_time?: string;
   duration_ms?: number;
   event_count: number;
   compressed_size_bytes: number;

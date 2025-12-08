@@ -57,7 +57,11 @@ export function SessionCard({ session, onClick, userId, expandedByDefault }: Ses
         <div className="flex items-center gap-2">
           {!userId && (
             <div className="hidden md:flex items-center gap-2">
-              <Avatar size={24} id={session.user_id} />
+              <Avatar
+                size={24}
+                id={session.user_id}
+                lastActiveTime={DateTime.fromSQL(session.session_end, { zone: "utc" })}
+              />
               <span className="text-xs text-neutral-600 dark:text-neutral-200 w-24 truncate">
                 {getUserDisplayName(session)}
               </span>

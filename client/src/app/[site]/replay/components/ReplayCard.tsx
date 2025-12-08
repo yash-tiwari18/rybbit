@@ -92,7 +92,11 @@ export function ReplayCard({ replay }: { replay: SessionReplayListItem }) {
     >
       {/* User info row */}
       <div className="flex items-center gap-1.5 mb-1.5">
-        <Avatar size={16} id={replay.user_id} />
+        <Avatar
+          size={16}
+          id={replay.user_id}
+          lastActiveTime={replay.end_time ? DateTime.fromSQL(replay.end_time, { zone: "utc" }) : undefined}
+        />
         <span className="text-xs text-neutral-700 dark:text-neutral-200 truncate max-w-[100px]">
           {getUserDisplayName(replay)}
         </span>
